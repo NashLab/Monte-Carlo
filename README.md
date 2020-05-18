@@ -10,7 +10,9 @@ Python script of Monte Carlo simulations for protein unfolding
 - [Citation](#citation)
 
 # Overview
-`MonteCarlo_DBM` is a Python script that conducts Monte Carlo simulation to study the dual-binding mode behavior for a single molecular system, that is capable of reproducing and validating the SMFS test (single molecule force sprectroscopy). Single moecule forced pulling test and corresponding force extension curves could be simulated based on the input parameters using a Bell-Evans model.
+`MonteCarlo_DBM` is a Python script that conducts Monte Carlo simulation to study the dual-binding mode behavior for a single molecular system, that is capable of reproducing and validating the SMFS test (single molecule force sprectroscopy). Single moecule forced pulling test and corresponding force extension curves could be simulated based on the input parameters using a Bell-Evans model. 
+
+The force could be loaded by either a constant pulling speed mode or a force clamp mode. Under constant speed mode, the cantilever is retracted with a constant pulling speed and the rupture force of the complex is recorded. Under force clamp mode, a fixed force is applied on the cantilever and the life time of the complex is recorded.
 
 
 # System Requirements
