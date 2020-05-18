@@ -10,6 +10,8 @@
 # 
 # - More information could be found on https://github.com/NashLab/Monte-Carlo
 # 
+# To run the simulation, go to ##	Simulation command
+# 
 # 					Last update: May.15th 2020
 # 					by Haipei Liu, Nash Lab
 
@@ -25,7 +27,7 @@ import os, os.path
 
 np.random.seed(None)
 
-##	HERE ARE ALL THE INPUT PARAMETERS
+##	INPUT PARAMETERS 
 #	Units : ms nm pN
 
 kT = 4.14 		# Boltzmann constant x T 		in	[pN*nm]
@@ -161,19 +163,20 @@ def simulate_constspeed(time,step,noiseval,spacer,cpl,cpl_2,fingerprint,speed,k,
 			i+=1
 		while i < len(timeaxis):
 			step_bc = (timeaxis[i+1]-timeaxis[i])
-			p_unf[i] = 1-np.exp(-rate(fnoise[i],*fingerprint[1:])*step_bc)
-			p_rup[i] = 1-np.exp(-rate(fnoise[i],*cpl[1:])*step_bc)
+			p_unf[i] = 1-np.exp(-rate(fnoise[i],*fingerprint[1:])*step_bc)	# update the probability that the fp(Xmod) unfolds
+			p_rup[i] = 1-np.exp(-rate(fnoise[i],*cpl[1:])*step_bc)			# update the probability that the complex ruptures
 			pick_rup = np.random.random_sample()
 			pick_unf = np.random.random_sample()
 
 			"""random test for complex rupture or unfolding of Xmod"""
-			if pick_unf > p_unf[i] and pick_rup > p_rup[i]: #both survive, nothing happens								
+			if pick_unf > p_unf[i] and pick_rup > p_rup[i]: #	both survive, nothing happens								
 				i+=1
 			elif pick_unf < p_unf[i] and pick_rup > p_rup[i]: #fingerprint unfolds, experiment continues
 				f_unfold = fnoise[i]
 				lr_unf = (fnoise[i] - fnoise[i-1]) / step_bc
 				i+=1
-				#update the axis for the Lc increment
+				#	Lc released from the protein unfolding
+				#	update the axis for the Lc increment
 				timeaxis_c, fnoise_c, ext_c, dist_c = generate_axis(time,step,speed,noiseval,spacer+fingerprint[0],timeaxis[i])
 				timeaxis= np.concatenate((timeaxis[:(i-1)],timeaxis_c),axis= None)
 				fnoise= np.concatenate((fnoise[:(i-1)],fnoise_c),axis= None)
@@ -184,7 +187,7 @@ def simulate_constspeed(time,step,noiseval,spacer,cpl,cpl_2,fingerprint,speed,k,
 
 				while fnoise[i]<f_rupture:
 					i+=1
-				fnoise[i+1:] = fnoise[i+1:]*0.
+				fnoise[i+1:] = fnoise[i+1:]*0.		#	update the force after rupture to be zero with noise
 
 				return f_rupture, f_unfold, ext, fnoise, lr_rup, lr_unf
 				break
@@ -192,7 +195,7 @@ def simulate_constspeed(time,step,noiseval,spacer,cpl,cpl_2,fingerprint,speed,k,
 				lr_rup = (fnoise[i] - fnoise[i-1]) / (timeaxis[i] - timeaxis[i-1])
 				f_rupture = fnoise[i]
 				f_unfold = 0
-				fnoise[i+1:] = fnoise[i+1:]*0.
+				fnoise[i+1:] = fnoise[i+1:]*0.		#	update the force after rupture to be zero with noise
 				return f_rupture, f_unfold, ext, fnoise, lr_rup, lr_unf
 				break
 	else:
@@ -219,7 +222,6 @@ def run_simulation(p_w,num,time,step,noiseval,spacer,cpl,ldr,fingerprint,forcera
 	unf_forces = np.zeros(num)
 	rup_lr = np.zeros(num)
 	unf_lr = np.zeros(num)
-
 	i_a, i_b, i_c =0,0,0
 	i_groups= np.zeros(num)
 
@@ -240,7 +242,6 @@ def run_simulation(p_w,num,time,step,noiseval,spacer,cpl,ldr,fingerprint,forcera
 	print ("Saving simulation parameters")
 	print ("Simulating {0} curves".format(num))
 	log.basicConfig(filename="speed_"+str(speed)+"logfile.log",filemode='w',level=log.DEBUG)
-
 
 	log.info("num: {0:0}".format(num))
 	log.info("time: {0} sec".format(time))
@@ -373,18 +374,20 @@ def plot_fed_trace(x,d,f):
 	plt.show()
 	return 0
 
+##	Simulation command
 #RUN YOUR SIMULATION HERE
 """
 Variable 
-	num		num of forced pulling tests wanted
-	time	time for pulling period
-	p_w	the ratio of weakly_bound/all_bound
-	speed 	applied pulling speed
-	k		probe spring constant 
-
-Choose Fingerprint
-	xMod is used as fingerprint
+	cpl 		name of complex of interest, could be edited or added in the INPUT PARAMETERS 
+	num			num of forced pulling tests wanted
+	time		total time for pulling period
+	step		time step for the simulation
+	noiseval	gaussian noise, optional
+	p_w	the 	ratio of weakly_bound/all_bound
+	speed 		applied pulling speed
+	k			probe spring constant 
+	Fingerprint	xMod is used as fingerprint
+	savecurves	to save indivual force extension curves. (This will slow down the simulation.)
 """
-
 run_simulation(p_w=0.2,num=1000,time=4.,step=0.0008,noiseval=0.,spacer=linker,cpl=xdoc,ldr=load,fingerprint=xMod,forceramp=False,speed=100.,k=91.,savecurves=False)
 
