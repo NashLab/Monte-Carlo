@@ -3,8 +3,11 @@ The input parameters and command to reproduce the dataset of Rc.XDoc dual bindin
 - Constant pulling speed simulations
 
 kT = 4.14 pN*nm
+
 k  = 91   pN/nm
+
 spacer length = 174 nm
+
 
 run_simulation(p_w=0.2,num=1000,time=200,step=0.01,noiseval=0.,spacer=linker,cpl=xdoc,ldr=load,fingerprint=xMod,forceramp=False,speed=1.,k=91.,savecurves=False)
 run_simulation(p_w=0.2,num=1000,time=40,step=0.001,noiseval=0.,spacer=linker,cpl=xdoc,ldr=load,fingerprint=xMod,forceramp=False,speed=10.,k=91.,savecurves=False)
