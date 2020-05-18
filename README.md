@@ -61,7 +61,7 @@ pip install seaborn
 
 # Demo
 An example output is given to simulate 1000 SMFS force curves at a pulling speed of 100 nm/s.
-The python script is excuted by the command:
+The python script is executed by the command:
 ```
 `python MonteCarlo_DBM.py`
 ```
