@@ -1,5 +1,5 @@
 # Monte-Carlo
-Monte Carlo simulations of protein unfolding
+Python script of Monte Carlo simulations for protein unfolding
 
 
 - [Overview](#overview)
@@ -10,7 +10,7 @@ Monte Carlo simulations of protein unfolding
 - [Citation](#citation)
 
 # Overview
-`MonteCarlo_DBM` is a Python script that conducts Monte Carlo simulation of the dual-binding mode behavior for a single molecular system, that is capable of reproducing and validating the SMFS test (single molecule force sprectroscopy).
+`MonteCarlo_DBM` is a Python script that conducts Monte Carlo simulation to study the dual-binding mode behavior for a single molecular system, that is capable of reproducing and validating the SMFS test (single molecule force sprectroscopy). Single moecule forced pulling test and corresponding force extension curves could be simulated based on the input parameters using a Bell-Evans model.
 
 
 # System Requirements
@@ -42,7 +42,6 @@ numpy         1.18.3
 seaborn       0.10.1
 ```
 
-
 # Installation Guide:
 
 ### Install from Github
@@ -52,7 +51,7 @@ python3 setup.py install
 ```
 - `sudo`, if required
 
-The missing packages in [Python Dependencies](#Python Dependencies) could be installed respectively using PIP installer:
+Any missing packages in [Python Dependencies](#Python Dependencies) could be installed respectively using PIP installer:
 ```
 pip install matplotlib
 pip install scipy
@@ -83,6 +82,8 @@ Raw date could be found in [Demo](./Demo):
 - [Complex ruputure_histogram](./Demo/analysis-hist-ratio_0.2speed_100.0.pdf)
 - [Xmod unfolding_force and Loading rate](./Demo/Xmod_v100.0.txt)
 - [Xmod unfolding_histogram](./Demo/Xmod_unfolding-hist-ratio_0.2speed_100.0.pdf)
+- [Logfile](./Demo/speed_100.0logfile.log)
+ 
 
 # Citation
 For usage of the package and associated manuscript, please cite according to the enclosed [citation.bib](./Demo/citation.bib).
