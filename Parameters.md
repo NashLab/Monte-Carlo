@@ -24,4 +24,5 @@ run_simulation(p_w=0.2,num=1000,time=0.005,step=0.000001,noiseval=0.,spacer=link
 run_force_clamp(p_w=0.2, num_sim=1000, cpl=xdoc,fingerprint=xMod, num_force=50, force_from=100, force_interval=10)
 ```
 
-Information about the input parameters could be found in `##	Simulation command` and `##	Input Parameters` in the py script `MonteCarlo_DBM.py`
+Information about the input parameters could be found in `##	Simulation command` and `##	Input Parameters` in the py script 
+[MonteCarlo_DBM.py](./MonteCarlo_DBM.py)
