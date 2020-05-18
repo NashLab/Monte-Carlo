@@ -374,20 +374,145 @@ def plot_fed_trace(x,d,f):
 	plt.show()
 	return 0
 
+def simulate_force_clamp(setpoint, fingerprint, cpl,cpl_2,n_step=500 , dispers=0, noiseval = 10):
+	"""
+	function to simulate the force clamp test
+	life time of the complex is tested under a constant applied force
+	"""
+	Test_lifetime = 1/rate(setpoint,*cpl[1:])
+	step = Test_lifetime / n_step
+	lifetime = 0
+	lifetime_fp = 0
+	
+	while 1:
+		fnoise = setpoint + np.random.normal(0,noiseval) 		# setup applied force with some noise
+		p_unf = 1-np.exp(-rate(fnoise,*fingerprint[1:])*step)	# update the probability that the fp(Xmod) unfolds
+		p_rup = 1-np.exp(-rate(fnoise,*cpl[1:])*step)			# update the probability that the complex ruptures
+		pick_rup = np.random.random_sample()
+		pick_unf = np.random.random_sample()
+		
+		"""random test for complex rupture or unfolding of Xmod"""
+		if pick_unf > p_unf and pick_rup > p_rup: 				# both survive, nothing
+			lifetime += step
+		elif pick_unf < p_unf and pick_rup > p_rup: 			# fingerprint unfolds, experiment continues
+			lifetime_fp = lifetime
+			while 1:
+				fnoise = setpoint + np.random.normal(0,noiseval)
+				lifetime += step
+				p_rup_fpunf = 1-np.exp(-rate(fnoise,*cpl_2[1:])*step)
+				pick_rup = np.random.random_sample()	
+				if pick_rup < p_rup_fpunf: 						#complex ruptures 
+					return lifetime,lifetime_fp
+					break
+		else: #complex ruptures with fingerprint intact, experiment ends
+			return lifetime,lifetime_fp
+			break
+def run_force_clamp(p_w, num_sim, cpl,fingerprint,num_force, force_from, force_interval):
+	force_sp = np.linspace(force_from,force_from+force_interval*(num_force-1),num_force) 	# setup a series of applied forces
+	lifetime = np.zeros([num_force,num_sim])
+	measured_avg_lifetime = np.zeros(num_force)
+	lifetime_xmod = np.zeros([num_force,num_sim])
+	avg_lifetime = np.zeros(num_force)
+	i_a, i_b, i_c =0,0,0
+	f_1, f_2, f_3, t_1, t_2, t_3 =[],[],[],[],[],[]
+ 
+	i_groups= np.zeros([num_force,num_sim])	
+	#setup directories for saving files
+	current_dir = os.getcwd()
+	pathname = "DBmode_ForceClamp_ratio-"+str(p_w)
+	data_dir = os.path.join(current_dir, pathname)
+	if not (os.path.exists(data_dir)):
+		os.mkdir(pathname)
+	os.chdir(data_dir)	
+	log.basicConfig(filename="full_dataset_speed_"+str(speed)+"logfile.log",filemode='w',level=log.DEBUG)
+	log.info("num: {0:0}".format(num_force))
+	log.info("complex: {0}".format(cpl))
+	log.info("fingerprint: {0}".format(fingerprint))
+	log.info("ClampForce,   Group,   Lifetime")
+	print('F, 		lifetime')
+
+	for k in range(num_force):    		
+		for i in range(num_sim):
+			pick_boundstate = np.random.random_sample()
+			# test bound state
+			if pick_boundstate < p_w:
+				lifetime[k,i], lifetime_xmod[k,i] = simulate_force_clamp(force_sp[k],fingerprint[1],cpl[1],cpl[2])
+				i_groups[k,i] = 3
+				i_a +=1
+				f_3.append(force_sp[k])
+				t_3.append(lifetime[k,i])
+			else:
+				lifetime[k,i], lifetime_xmod[k,i] = simulate_force_clamp(force_sp[k],fingerprint[1],cpl[3],cpl[4])
+				if lifetime_xmod[k,i] != 0:
+					i_groups[k,i] = 2
+					i_c +=1
+					f_2.append(force_sp[k])
+					t_2.append(lifetime[k,i])     
+				else:
+					i_groups[k,i] = 1
+					i_b +=1
+					f_1.append(force_sp[k])
+					t_1.append(lifetime[k,i])
+			log.info("{0},   {1},   {2:.5f}".format(force_sp[k],i_groups[k,i],lifetime[k,i]))
+		t_max = 1000
+		t_min = 0.1
+
+		measured_lifetime = [t for t in lifetime[k] if t < t_max and t> t_min]
+		if measured_lifetime == []:
+			measured_lifetime.append(0)
+		measured_avg_lifetime[k] =  np.average(measured_lifetime)
+		avg_lifetime[k] = np.average(lifetime[k])
+		#print(force_sp[k],avg_lifetime[k])
+	#Make a figure	
+	fig, ax = plt.subplots()
+	plt.plot(force_sp,avg_lifetime,label= "Average Life time",color='k')
+
+	ax.set_yscale("log")
+	plt.scatter(f_1,t_1,alpha=0.02,c=colors[0])
+	plt.scatter(f_2,t_2,alpha=0.02,c=colors[1])
+	plt.scatter(f_3,t_3,alpha=0.02,c=colors[2])
+
+	ax.legend(loc ="upper right", prop={"size": fontsize-8})
+	ax.set(xlabel="Force [pN]",ylabel="Lifetime [s]")
+	
+	fig.tight_layout()
+	
+	plt.savefig("Lifetime_"+str(p_w)+".pdf")
+	plt.savefig("Lifetime_"+str(p_w)+".png")	
+	plt.show()		
+	os.chdir(data_dir)
+	filename = "F-average_lifetime_"+str(p_w)+".txt"
+	np.savetxt(filename,np.transpose([force_sp, avg_lifetime]),header="F Lifetime")
+
+
 ##	Simulation command
 #RUN YOUR SIMULATION HERE
 """
+--- Mode 1 ---   constant speed test 
+templete command
+run_simulation(p_w=0.2,num=1000,time=4.,step=0.0008,noiseval=0.,spacer=linker,cpl=xdoc,ldr=load,fingerprint=xMod,forceramp=False,speed=100.,k=91.,savecurves=False)
+
 Variable 
 	cpl 		name of complex of interest, could be edited or added in the INPUT PARAMETERS 
 	num			num of forced pulling tests wanted
 	time		total time for pulling period
 	step		time step for the simulation
 	noiseval	gaussian noise, optional
-	p_w	the 	ratio of weakly_bound/all_bound
+	p_w			the	ratio of weakly_bound/all_bound
 	speed 		applied pulling speed
 	k			probe spring constant 
 	Fingerprint	xMod is used as fingerprint
 	savecurves	to save indivual force extension curves. (This will slow down the simulation.)
+
+--- Mode 2 ---   force clamp test 
+templete command
+run_force_clamp(p_w=0.2, num_sim=50, cpl=xdoc,fingerprint=xMod, num_force=50, force_from=100, force_interval=10)
+
+Variable 
+	p_w			the ratio of weakly_bound/all_bound
+	num_sim		num of forced pulling tests wanted for each applied force set point
+	cpl 		name of complex of interest, could be edited or added in the INPUT PARAMETERS 
+	fingerprint	xMod is used as fingerprint
+	num_force	num of different force setpoint, which starts with force_from and increase with force_interval
 """
 run_simulation(p_w=0.2,num=1000,time=4.,step=0.0008,noiseval=0.,spacer=linker,cpl=xdoc,ldr=load,fingerprint=xMod,forceramp=False,speed=100.,k=91.,savecurves=False)
-
