@@ -65,7 +65,7 @@ pip install seaborn
 An example output is given to simulate 1000 SMFS force curves at a pulling speed of 100 nm/s.
 The python script is executed by the command:
 ```
-`python MonteCarlo_DBM.py`
+python MonteCarlo_DBM.py
 ```
 
 - Sampling rate: 12.5 points/nm
